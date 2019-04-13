@@ -411,6 +411,7 @@ const std::string GTP::s_commands[] = {
     "lz-genmove_analyze",
     "lz-memory_report",
     "lz-setoption",
+    "lz-pristine_board",
     "gomill-explain_last_move",
     ""
 };
@@ -1180,6 +1181,14 @@ void GTP::execute(GameState & game, const std::string& xinput) {
         return;
     } else if (command.find("lz-setoption") == 0) {
         return execute_setoption(*search.get(), id, command);
+    } else if (command.find("lz-pristine_board") == 0) {
+        Training::clear_training();
+        game.reset_game();
+        s_network->nncache_clear();
+        search = std::make_unique<UCTSearch>(game, *s_network);
+        assert(UCTNodePointer::get_tree_size() == 0);
+        gtp_printf(id, "");
+        return;
     } else if (command.find("gomill-explain_last_move") == 0) {
         gtp_printf(id, "%s\n", search->explain_last_think().c_str());
         return;
